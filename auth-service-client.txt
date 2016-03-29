@@ -1,0 +1,65 @@
+Idp
+	- GET /token/basic (allow future ways of getting a token, e.g. saml or oauth)
+		- accepts (Authorization, BASIC ...)
+	- produces JSON {token:..., <future-stuff, e.g. refresh-token>}
+	- "token" must contain expire date, roles, username
+		- must be encrypted/signed
+		- must be decryptable by client/signature must be verifiable
+	- knows all "users" and their roles
+	- has a own database for this
+	- in case client can't decrypt token
+		- has a GET /verify?token=...
+		- channel must be secured by certificate, so that client knows, that he can trust the server
+			=> with spring web security or just be infrastructure!!
+	- IdP can encrypt/sign the token with his private key, which only he knows
+
+client
+	- gets his config e.g. from the config-service-module, which gets the config itself e.g. from a server
+		- no critical info must be there!!
+
+	- can decrypt the token with the IdP's public key, which can be stored un-secured in the config
+		- issue is not, that the content of the token must be encrypted
+		- issue is, that the client must trust the creator of the token
+			=> instead of JWT, only JWSignatures for our own tokens?
+			=> but our own tokens are not standard, but JWT are standard (and signed) => use these
+
+	- client knows all roles, which may call him
+		- alternative: token contains all roles, which the token-bearer may call
+		- this then would not require the client to know all parties, which may call him.
+			=> IdP would then also cover the aspect of knowing the message-relations !!
+			=> is not, what a IdP should know!
+		- in the original case, the client would have to be updated, every time a new party is introduced.
+		- in the alternative case, the IdP would know all the allowed messaging-partner-mappings
+		- other alternative: configuration
+			- client has a config, which defines, what roles may call him
+
+	- api
+		- TokenManager
+		- String getToken(String username, String password) //token is only a string
+		- TokenValidity validateToken(String token) 
+­			- TokenValidity 
+				- isValid: boolean 
+				- if isValid, then contained Token is not Token.INVALID, but a Token consisting of username, roles and expireTime 
+				- if not isValid, then contains a List<Invalidity>, e.g. EXPIRED, MALFORMED, WRONG_ALG, WRONG_KEY
+		- LifeCycle of auth-service-client
+			- void init(AuthServiceClientConfiguration)
+		- AuthServiceClientConfiguration
+			- url
+			- decrypt key
+			- decrypt algo
+			- whether the client should decrypt the token itself or call the IdP with GET /verify?token=...
+				- e.g. only for public-private keys, the client can decrypt itself, as the private key is only on the IdP
+				- for symmetric key, the client MUST NOT have the IdP's key, and thus the IdP is the only one, who can
+				  decrypt the token (drawback : IdP is the bottleneck then)
+
+why not just ssl?
+- hard for messages from ANY source, e.g. QA-colleagues from browser rest-client
+- certificate handling
+
+why not OAuth2?
+- ?
+
+
+==> dam, veit, jan, christopher, burkhard fragen
+
+

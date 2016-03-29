@@ -1,0 +1,47 @@
+auth-service
+-----------------------------------------------------------------------------
+- pw-token endpunkte
+	- zugriff auf pw user db (gemeinsamer integrations-punkt)
+	- persistence layer
+	- authPersistenceProvider
+	=>
+	- basic, saml, ... => token
+	- PW selber 
+		- kann die PW-tokens parsen und connection machen
+
+- zusätzlicher endpunkt für inter-service-communication
+	- jwt, jws
+	- hat eine "config" mit user/passwords (z.b. eine !extra! DB)
+		=> = userService, abkapseln!
+	- hat halt private/public key, um die tokens zu signieren, damit die woanders auch wieder OHNE den auth-service angeschaut werden können wegen roles
+
+- muss also insgesmt nur :
+	=> XYZ -> token
+	- token kann pw token sein, oder jwt
+	- je nach endpunkt
+	- pw-endpunkte sind GET /auth/wp/basic, auth/wp/saml, ...
+	- jwt enpunkt ist GET /auth/interservice/basic
+
+- ein tokenservice hat somit folgende api
+!!!  wichtig hierbei: der token muss alle infos enthalten  !!!
+	- String buildToken(UserInfo userInfo)
+	- TokenValidity validateToken(String token)
+
+- alle tokenservice implementation müssen dieses api implementieren
+
+- token kann sein mit und ohne expiryDate, denn z.b. die pw-clients können den token nicht decrypten, müssen aber die expiryZeit wissen
+
+- tokenService verwendet UserInfo, ein credentialsAnalyser macht aus den credential-strings per logic und userService diese userInfo
+
+
+auth-service-client
+-----------------------------------------------------------------------------
+- muss ein token validieren können
+- je nach obigen tokenservice-impls muss es hier wieder verschiedene clients geben
+- die haben nur
+	- TokenValidity validateToken(String token)
+- pw hat dafür die LoginProviders, etc.
+- jwt hat dafür den public key
+- wenn ein client das nicht local machen kann, dann muss er zum auth-service gehen per http, dieser muss einen "validate?token=..." endpunkt anbieten
+- entsprechende config dafür
+

@@ -1,0 +1,36 @@
+/token/*
+-------------------------------------------------------
+- für WP user und legacy
+- brauchen somit PwAuthProvider von persistence
+  - somit JDBC access
+- und secure store, etc
+- jersey, guice
+- interfaces verfügbar
+- hat/braucht serverSecuredStore
+  - wird initialisiert, auch mit MAC
+  - für token erstellen
+  - für token entschlüsseln
+- kann WP jetzt einen eigenen, gleichen securedStore haben, um tokens validieren zu können?
+- oder muss WP jetzt immer einen call gegen den auth-service machen, um zu validieren?
+  - com.lexmark.workplace.auth.secstore.server.ServerSecuredStore#find
+  - WP hat einfach eine eigene securedStore instanz, die genauso in die DB kuckt, wie die vom auth-service
+  - nur aufpassen, dass nicht beide gleichzeitig reinschreiben
+  - => WP kann "selber" validieren
+
+
+/jwt/*
+-------------------------------------------------------
+- neu bzw. für inter-service communication
+- braucht einen token-service, der auch von clients benutzt werden kann
+- clients haben dann zugriff auf public key zum entschlüsseln des tokens
+- signature für vertrauen
+- enthält role
+- braucht eigenen user-store
+  - evtl. auch noch einbindung der WP user?
+- JDBC an eine DB für user store, evtl. auch die WP DB
+
+
+links
+-------------------------------------------------------
+http://www.codingpedia.org/ama/restful-web-services-example-in-java-with-jersey-spring-and-mybatis/
+http://stackoverflow.com/questions/25701658/integrating-jersey-2-and-spring-with-java-based-configuration/25701877#25701877

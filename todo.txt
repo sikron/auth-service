@@ -1,0 +1,17 @@
+- as userService use a real db
+- as AuthServiceConfig use a wrapper around a ConfigService
+    - in this config a serialized public and private key must be stored
+    - so the AuthService can use its private key (and public key)
+    - and also a separate client can use this public key
+- => how to de/serialize keys ?
+- look at the different out-commented JWT and JWS stuff, should that be used also?
+- better use of TokenInvalidities
+- use config-service for the authService, but only read from properties
+    - key.private, key.public
+    - key.public can then also be published and read by other clients, e.g. from a REST config server
+
+- why so complicated to setup?
+	- always a configService and keyvalueservice must be provided
+	- authservice also needs a tokenservice
+	- authservice-client also needs a config (and configservice and keyvalueservice again)
+	==> some defaults ?
